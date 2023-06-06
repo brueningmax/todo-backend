@@ -5,9 +5,8 @@ const router = express.Router()
 
 //login
 router.post('/', async (req:Request, res:Response) => {
-    console.log(req.body)
     let data = await getToken(req.body)
-    res.status(data.status).json(data.json)
+    res.status(data.status).cookie("token", data.json.token).json(data.json)
 })
 
 export default router;

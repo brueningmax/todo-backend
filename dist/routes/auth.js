@@ -17,8 +17,7 @@ const auth_1 = require("../views/auth");
 const router = express_1.default.Router();
 //login
 router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req.body);
     let data = yield (0, auth_1.getToken)(req.body);
-    res.status(data.status).json(data.json);
+    res.status(data.status).cookie("token", data.json.token).json(data.json);
 }));
 exports.default = router;

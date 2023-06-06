@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.secret = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const users_1 = __importDefault(require("./routes/users"));
@@ -10,14 +11,16 @@ const todos_1 = __importDefault(require("./routes/todos"));
 const clients_1 = __importDefault(require("./routes/clients"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const body_parser_1 = __importDefault(require("body-parser"));
+const cookieJWTauth_1 = require("./middleware/cookieJWTauth");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
-app.get('/', (req, res) => {
-    res.send('Express + TypeScript Server');
-});
-app.post('/', (req, res) => {
-    res.send(req.body);
+exports.secret = String(process.env.SECRET);
+// app.get('/', (req: Request, res: Response) => {
+//   res.send('Express + TypeScript Server');
+// });
+app.post('/', cookieJWTauth_1.jwtAuth, (req, res) => {
+    res.send(req.user);
 });
 //get whole table
 app.use(body_parser_1.default.json());
