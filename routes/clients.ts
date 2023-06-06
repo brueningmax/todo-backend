@@ -9,7 +9,6 @@ router.get('/', async (req:Request, res:Response) => {
     res.send(data)
 })
 
-
 // get client by ID
 router.get('/:id', async (req:Request, res:Response) => {
     let data = await getClientByID(req.params.id)

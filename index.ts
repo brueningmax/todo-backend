@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import usersRouter from './routes/users';
 import todosRouter from './routes/todos';
 import clientsRouter from './routes/clients';
+import authRouter from './routes/auth'
 import bodyParser from 'body-parser';
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(bodyParser.json())
 app.use('/users', usersRouter)
 app.use('/todos', todosRouter)
 app.use('/clients', clientsRouter)
+app.use('/auth', authRouter)
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
