@@ -1,10 +1,17 @@
 import { sequelize, Client } from ".";
+import { TodoModel } from "../models/todo";
 
 
 
 export const getClients = async () => {
     let clients = await Client.findAll({
-        attributes: ['id', 'name', 'address', 'contact']
+        attributes: ['id', 'name', 'address', 'contact'],
+        include: [
+            {
+                model: TodoModel,
+                as: 'todos',
+            }
+        ]
     })
     const formattedData = clients.map(client => client.dataValues)
     return formattedData;

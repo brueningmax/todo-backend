@@ -1,14 +1,36 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, response } from 'express';
+import { jwtAuth } from '../middleware/cookieJWTauth';
+import { createTodo, getTodos, getTodoByID, updateTodo, deleteTodo } from '../views/todos'
 const router = express.Router()
 
-router.get('/', (req:Request, res:Response) => {
-    res.send('todos')
+// get all todo
+router.get('/', async (req:Request, res:Response) => {
+    let data = await getTodos()
+    res.send(data)
 })
 
-// get all todo
 // get todo
+router.get('/:id', async (req:Request, res:Response) => {
+    let data = await getTodoByID(req.params.id)
+    res.send(data)
+})
+
 // create todo
+router.post('/new', jwtAuth, async (req: Request, res: Response) => {
+    let data = await createTodo(req.user.id, req.body)
+    res.status(data.status).json(data.json)
+})
+
 // update todo
+router.patch('/:id', async (req:Request, res:Response) => {
+    let data = await updateTodo(req.params.id, req.body)
+    res.status(data.status).json(data.json)
+})
+
 // delete todo
+router.delete('/:id', async (req:Request, res:Response) => {
+    let data = await deleteTodo(req.params.id)
+    res.sendStatus(data.status)
+})
 
 export default router

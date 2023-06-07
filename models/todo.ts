@@ -8,8 +8,8 @@ export class TodoModel extends Model {
     public type!: string;
     public notes!: string;
     public status!: string;
-    public user!: number;
-    public client!: number;
+    // public user!: number;
+    // public client!: number;
     public next_todo?: number;
     public previous_todo?: number;
     public month?: 'jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'oct' | 'nov' | 'dec';
@@ -43,14 +43,14 @@ export class TodoModel extends Model {
                     type: DataTypes.STRING,
                     allowNull: false,
                 },
-                user: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                },
-                client: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                },
+                // user: {
+                //     type: DataTypes.INTEGER,
+                //     allowNull: false,
+                // },
+                // client: {
+                //     type: DataTypes.INTEGER,
+                //     allowNull: false,
+                // },
                 next_todo: {
                     type: DataTypes.INTEGER,
                 },
@@ -79,14 +79,14 @@ export class TodoModel extends Model {
             },
             {
                 sequelize,
-                tableName: 'user',
+                tableName: 'todo',
                 timestamps: false,
               }
             ) as ModelStatic<TodoModel>;
     };
     public static associate(models: { [key: string]: ModelStatic<Model>}): void {
         this.belongsTo(UserModel, {
-          foreignKey: 'user',
+          foreignKey: 'user'
         });
         this.belongsTo(ClientModel, {
           foreignKey: 'client',

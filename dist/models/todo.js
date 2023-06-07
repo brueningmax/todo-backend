@@ -29,14 +29,14 @@ class TodoModel extends sequelize_1.Model {
                 type: sequelize_1.DataTypes.STRING,
                 allowNull: false,
             },
-            user: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: false,
-            },
-            client: {
-                type: sequelize_1.DataTypes.INTEGER,
-                allowNull: false,
-            },
+            // user: {
+            //     type: DataTypes.INTEGER,
+            //     allowNull: false,
+            // },
+            // client: {
+            //     type: DataTypes.INTEGER,
+            //     allowNull: false,
+            // },
             next_todo: {
                 type: sequelize_1.DataTypes.INTEGER,
             },
@@ -51,14 +51,14 @@ class TodoModel extends sequelize_1.Model {
             }
         }, {
             sequelize,
-            tableName: 'user',
+            tableName: 'todo',
             timestamps: false,
         });
     }
     ;
     static associate(models) {
         this.belongsTo(user_1.UserModel, {
-            foreignKey: 'user',
+            foreignKey: 'user'
         });
         this.belongsTo(client_1.ClientModel, {
             foreignKey: 'client',

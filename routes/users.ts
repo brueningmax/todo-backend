@@ -28,6 +28,8 @@ router.patch('/:id', async (req:Request, res:Response) => {
     let data = await updateUser(req.params.id, req.body)
     res.status(data.status).json(data.json)
 })
+
+
 // delete user
 router.delete('/:id', async (req:Request, res:Response) => {
     let data = await deleteUser(req.params.id)

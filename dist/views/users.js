@@ -11,9 +11,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserByID = exports.getUsers = void 0;
 const _1 = require(".");
+const todo_1 = require("../models/todo");
 const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     let users = yield _1.User.findAll({
-        attributes: ['id', 'name', 'password', 'role']
+        attributes: ['id', 'name', 'password', 'role'],
+        include: [
+            {
+                model: todo_1.TodoModel,
+                as: 'todos',
+            }
+        ]
     });
     const formattedData = users.map(user => user.dataValues);
     return formattedData;
