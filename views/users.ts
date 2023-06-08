@@ -75,6 +75,9 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
 
 // delete User
 export const deleteUser = async (id: string) => {
+    if (id === "1" || id === "2") {
+        return {status: 401, json: { error: 'User cant be deleted' }};
+    }
     try {
         const user = await User.findByPk(parseInt(id))
         if (user) {
