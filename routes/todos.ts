@@ -1,6 +1,6 @@
 import express, { Express, Request, Response, response } from 'express';
 import { jwtAuth } from '../middleware/cookieJWTauth';
-import { createTodo, getTodos, getTodoByID, updateTodo, deleteTodo } from '../views/todos'
+import { createTodo, getTodos, getTodoByID, updateTodo, deleteTodo, deleteCompletedTodos } from '../views/todos'
 const router = express.Router()
 
 // get all todo
@@ -27,10 +27,20 @@ router.patch('/:id', async (req:Request, res:Response) => {
     res.status(data.status).json(data.json)
 })
 
+
 // delete todo
-router.delete('/:id', async (req:Request, res:Response) => {
+router.delete('/delete/:id', async (req:Request, res:Response) => {
     let data = await deleteTodo(req.params.id)
     res.sendStatus(data.status)
 })
+
+// delete completed todos
+router.delete('/deleteCompleted', jwtAuth, async (req:Request, res:Response) => {
+    let data = await deleteCompletedTodos(req)
+    res.status(data.status).json(data.json)
+})
+
+
+
 
 export default router

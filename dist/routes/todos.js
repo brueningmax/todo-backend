@@ -37,8 +37,13 @@ router.patch('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     res.status(data.status).json(data.json);
 }));
 // delete todo
-router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/delete/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let data = yield (0, todos_1.deleteTodo)(req.params.id);
     res.sendStatus(data.status);
+}));
+// delete completed todos
+router.delete('/deleteCompleted', cookieJWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.deleteCompletedTodos)(req);
+    res.status(data.status).json(data.json);
 }));
 exports.default = router;

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
+exports.deleteCompletedTodos = exports.deleteTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
 const _1 = require(".");
 const client_1 = require("../models/client");
 const user_1 = require("../models/user");
@@ -106,3 +106,25 @@ const deleteTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.deleteTodo = deleteTodo;
+// delete completed todos
+const deleteCompletedTodos = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('HIIIIIIIEEEEEER');
+    console.log(req.user);
+    if (req.user.role != 2) {
+        return { status: 401, json: { error: 'Not authorized' } };
+    }
+    try {
+        yield _1.Todo.destroy({
+            where: {
+                user: 4,
+                status: 'completed'
+            }
+        });
+        return { status: 204, json: { message: 'Todos deleted' } };
+    }
+    catch (error) {
+        console.error('Error deleting todos:', error);
+        return { status: 500, json: { error: 'Failed to delete todos' } };
+    }
+});
+exports.deleteCompletedTodos = deleteCompletedTodos;

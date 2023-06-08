@@ -118,3 +118,25 @@ export const deleteTodo = async (id: string) => {
       return {status: 500, json: { error: 'Failed to delete todo' }};
     }
 }
+
+// delete completed todos
+export const deleteCompletedTodos = async (req:Request) => {
+  console.log('HIIIIIIIEEEEEER')
+  console.log(req.user)
+  if (req.user.role != 2) {
+    return {status: 401, json: { error: 'Not authorized' }};
+  }
+  try {
+      await Todo.destroy({
+        where: {
+          user: 4,
+          status: 'completed'
+        }
+      })
+          return {status: 204, json: {message: 'Todos deleted' }};
+    
+  } catch (error) {
+      console.error('Error deleting todos:', error);
+      return {status: 500, json: { error: 'Failed to delete todos' }};
+    }
+}
