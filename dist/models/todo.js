@@ -39,9 +39,11 @@ class TodoModel extends sequelize_1.Model {
             // },
             next_todo: {
                 type: sequelize_1.DataTypes.INTEGER,
+                allowNull: true,
             },
             previous_todo: {
                 type: sequelize_1.DataTypes.INTEGER,
+                allowNull: true,
             },
             month: {
                 type: sequelize_1.DataTypes.ENUM('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'),

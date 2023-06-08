@@ -28,7 +28,7 @@ router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 // create todo
 router.post('/new', cookieJWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.createTodo)(req.user.id, req.body);
+    let data = yield (0, todos_1.createTodo)(req.body);
     res.status(data.status).json(data.json);
 }));
 // update todo

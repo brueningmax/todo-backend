@@ -49,37 +49,43 @@ type Todo = {
   type: string,
   notes: string,
   status: string,
+  next_todo?: number | null,
+  previous_todo?: number | null,
   user: number,
   client: number,
   month: string,
   year: number
 }
 
-export const createTodo = async (user: number, todoData: Todo) => {
+export const createTodo = async (newTodo: Todo) => {
     try {
-        const { 
-          priority,
-          type,
-          notes,
-          status,
-          client,
-          month,
-          year} = todoData;
-          
-    
-        // Create a new user instance
-        const todo = await Todo.create({
-          priority,
-          type,
-          notes,
-          status,
-          user,
-          client,
-          month,
-          year
-        });
 
-        return {status: 201, json: todo};
+        // get last todo => todo.id
+        let last_todo = await Todo.findOne({
+          where: {
+            user: 1,
+            next_todo: null
+          }
+        })
+
+        if (last_todo) {
+          newTodo.previous_todo = last_todo.id
+        } else {
+          newTodo.previous_todo = null
+        }
+
+
+        newTodo.status = "open"
+        newTodo.next_todo = null
+        newTodo.user = 1
+        const createdTodo = await Todo.create(newTodo)
+
+        if (last_todo) {
+          last_todo.next_todo = createdTodo.id
+          await last_todo?.save()
+        }
+
+        return {status: 201, json: createdTodo};
       } catch (error) {
         console.error('Error creating todo:', error);
         return {status: 500, json: { error: 'Failed to create todo' }};

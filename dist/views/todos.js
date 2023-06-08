@@ -48,21 +48,30 @@ const getTodoByID = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return formattedData;
 });
 exports.getTodoByID = getTodoByID;
-const createTodo = (user, todoData) => __awaiter(void 0, void 0, void 0, function* () {
+const createTodo = (newTodo) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { priority, type, notes, status, client, month, year } = todoData;
-        // Create a new user instance
-        const todo = yield _1.Todo.create({
-            priority,
-            type,
-            notes,
-            status,
-            user,
-            client,
-            month,
-            year
+        // get last todo => todo.id
+        let last_todo = yield _1.Todo.findOne({
+            where: {
+                user: 1,
+                next_todo: null
+            }
         });
-        return { status: 201, json: todo };
+        if (last_todo) {
+            newTodo.previous_todo = last_todo.id;
+        }
+        else {
+            newTodo.previous_todo = null;
+        }
+        newTodo.status = "open";
+        newTodo.next_todo = null;
+        newTodo.user = 1;
+        const createdTodo = yield _1.Todo.create(newTodo);
+        if (last_todo) {
+            last_todo.next_todo = createdTodo.id;
+            yield (last_todo === null || last_todo === void 0 ? void 0 : last_todo.save());
+        }
+        return { status: 201, json: createdTodo };
     }
     catch (error) {
         console.error('Error creating todo:', error);
@@ -70,6 +79,33 @@ const createTodo = (user, todoData) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.createTodo = createTodo;
+// export const createTodo = async (user: number, todoData: Todo) => {
+//     try {
+//         const { 
+//           priority,
+//           type,
+//           notes,
+//           status,
+//           client,
+//           month,
+//           year} = todoData;
+//         // Create a new user instance
+//         const todo = await Todo.create({
+//           priority,
+//           type,
+//           notes,
+//           status,
+//           user,
+//           client,
+//           month,
+//           year
+//         });
+//         return {status: 201, json: todo};
+//       } catch (error) {
+//         console.error('Error creating todo:', error);
+//         return {status: 500, json: { error: 'Failed to create todo' }};
+//       }
+// }
 // update Todo
 const updateTodo = (id, todoData) => __awaiter(void 0, void 0, void 0, function* () {
     try {

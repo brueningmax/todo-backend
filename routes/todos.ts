@@ -17,7 +17,7 @@ router.get('/:id', async (req:Request, res:Response) => {
 
 // create todo
 router.post('/new', jwtAuth, async (req: Request, res: Response) => {
-    let data = await createTodo(req.user.id, req.body)
+    let data = await createTodo(req.body)
     res.status(data.status).json(data.json)
 })
 

@@ -53,9 +53,11 @@ export class TodoModel extends Model {
                 // },
                 next_todo: {
                     type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
                 previous_todo: {
                     type: DataTypes.INTEGER,
+                    allowNull: true,
                 },
                 month: {
                     type: DataTypes.ENUM(
