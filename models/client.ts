@@ -43,6 +43,6 @@ export class ClientModel extends Model {
 
   public static associate(models: { [key: string]: ModelStatic<TodoModel> }): void {
     // A Client can have many Todos
-    this.hasMany(TodoModel, { foreignKey: 'client', as: 'todos' });
+    this.hasMany(TodoModel, { foreignKey: 'client', as: 'todos', onDelete: 'CASCADE' });
   }
 }

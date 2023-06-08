@@ -45,6 +45,6 @@ export class UserModel extends Model {
 
   public static associate(models: { [key: string]:  ModelStatic<TodoModel> }): void {
     // A User can have many Todos
-    this.hasMany(TodoModel, {as:'todos', foreignKey: 'user' });
+    this.hasMany(TodoModel, {as:'todos', foreignKey: 'user', onDelete: 'CASCADE'});
   }
 }
