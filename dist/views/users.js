@@ -74,6 +74,9 @@ const updateUser = (id, userData) => __awaiter(void 0, void 0, void 0, function*
 exports.updateUser = updateUser;
 // delete User
 const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    if (id === "1" || id === "2") {
+        return { status: 401, json: { error: 'User cant be deleted' } };
+    }
     try {
         const user = yield _1.User.findByPk(parseInt(id));
         if (user) {

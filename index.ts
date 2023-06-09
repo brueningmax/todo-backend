@@ -4,6 +4,7 @@ import usersRouter from './routes/users';
 import todosRouter from './routes/todos';
 import clientsRouter from './routes/clients';
 import authRouter from './routes/auth'
+import mainRouter from './routes/main'
 import bodyParser from 'body-parser';
 import { jwtAuth } from './middleware/cookieJWTauth';
 
@@ -24,6 +25,7 @@ app.post('/', jwtAuth, (req: Request, res: Response) => {
 //get whole table
 
 app.use(bodyParser.json())
+app.use('/board', mainRouter)
 app.use('/users', usersRouter)
 app.use('/todos', todosRouter)
 app.use('/clients', clientsRouter)

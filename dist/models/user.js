@@ -34,7 +34,7 @@ class UserModel extends sequelize_1.Model {
     }
     static associate(models) {
         // A User can have many Todos
-        this.hasMany(todo_1.TodoModel, { as: 'todos', foreignKey: 'user' });
+        this.hasMany(todo_1.TodoModel, { as: 'todos', foreignKey: 'user', onDelete: 'CASCADE' });
     }
 }
 exports.UserModel = UserModel;

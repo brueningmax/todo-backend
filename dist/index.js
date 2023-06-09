@@ -10,6 +10,7 @@ const users_1 = __importDefault(require("./routes/users"));
 const todos_1 = __importDefault(require("./routes/todos"));
 const clients_1 = __importDefault(require("./routes/clients"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const main_1 = __importDefault(require("./routes/main"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cookieJWTauth_1 = require("./middleware/cookieJWTauth");
 dotenv_1.default.config();
@@ -24,6 +25,7 @@ app.post('/', cookieJWTauth_1.jwtAuth, (req, res) => {
 });
 //get whole table
 app.use(body_parser_1.default.json());
+app.use('/board', main_1.default);
 app.use('/users', users_1.default);
 app.use('/todos', todos_1.default);
 app.use('/clients', clients_1.default);

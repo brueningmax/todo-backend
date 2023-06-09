@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCompletedTodos = exports.deleteTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
+exports.moveTodo = exports.deleteCompletedTodos = exports.deleteTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
 const _1 = require(".");
 const client_1 = require("../models/client");
 const user_1 = require("../models/user");
@@ -79,33 +79,6 @@ const createTodo = (newTodo) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.createTodo = createTodo;
-// export const createTodo = async (user: number, todoData: Todo) => {
-//     try {
-//         const { 
-//           priority,
-//           type,
-//           notes,
-//           status,
-//           client,
-//           month,
-//           year} = todoData;
-//         // Create a new user instance
-//         const todo = await Todo.create({
-//           priority,
-//           type,
-//           notes,
-//           status,
-//           user,
-//           client,
-//           month,
-//           year
-//         });
-//         return {status: 201, json: todo};
-//       } catch (error) {
-//         console.error('Error creating todo:', error);
-//         return {status: 500, json: { error: 'Failed to create todo' }};
-//       }
-// }
 // update Todo
 const updateTodo = (id, todoData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -144,8 +117,6 @@ const deleteTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
 exports.deleteTodo = deleteTodo;
 // delete completed todos
 const deleteCompletedTodos = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('HIIIIIIIEEEEEER');
-    console.log(req.user);
     if (req.user.role != 2) {
         return { status: 401, json: { error: 'Not authorized' } };
     }
@@ -164,3 +135,46 @@ const deleteCompletedTodos = (req) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.deleteCompletedTodos = deleteCompletedTodos;
+const moveTodo = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        let movedTodo = yield _1.Todo.findByPk(req.body.todoId);
+        movedTodo.user === ((_a = req.body) === null || _a === void 0 ? void 0 : _a.to.userID);
+        movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.previous_todo = req.body.to.previous_todo ? req.body.to.previous_todo : null;
+        movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.next_todo = req.body.to.next_todo ? req.body.to.next_todo : null;
+        if (req.body.from.previous_todo) {
+            let old_previous = yield _1.Todo.findByPk(req.body.from.previous_todo);
+            if (old_previous) {
+                old_previous.next_todo = req.body.from.next_todo;
+                old_previous === null || old_previous === void 0 ? void 0 : old_previous.save();
+            }
+        }
+        if (req.body.from.next_todo) {
+            let old_next = yield _1.Todo.findByPk(req.body.from.next_todo);
+            if (old_next) {
+                old_next.previous_todo = req.body.from.previous_todo;
+                old_next === null || old_next === void 0 ? void 0 : old_next.save();
+            }
+        }
+        if (req.body.to.previous_todo) {
+            let new_previous = yield _1.Todo.findByPk(req.body.to.previous_todo);
+            if (new_previous) {
+                new_previous.previous_todo = req.body.to.previous_todo;
+                new_previous === null || new_previous === void 0 ? void 0 : new_previous.save();
+            }
+        }
+        if (req.body.to.next_todo) {
+            let new_next = yield _1.Todo.findByPk(req.body.to.next_todo);
+            if (new_next) {
+                new_next.previous_todo = req.body.to.next_todo;
+                new_next === null || new_next === void 0 ? void 0 : new_next.save();
+            }
+        }
+        return { status: 200, json: movedTodo };
+    }
+    catch (error) {
+        console.error('Error updating todo:', error);
+        return { status: 500, json: { error: 'Failed to update todo' } };
+    }
+});
+exports.moveTodo = moveTodo;

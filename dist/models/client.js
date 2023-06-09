@@ -32,7 +32,7 @@ class ClientModel extends sequelize_1.Model {
     }
     static associate(models) {
         // A Client can have many Todos
-        this.hasMany(todo_1.TodoModel, { foreignKey: 'client', as: 'todos' });
+        this.hasMany(todo_1.TodoModel, { foreignKey: 'client', as: 'todos', onDelete: 'CASCADE' });
     }
 }
 exports.ClientModel = ClientModel;
