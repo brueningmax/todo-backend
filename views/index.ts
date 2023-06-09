@@ -2,10 +2,15 @@ import { Sequelize } from 'sequelize';
 import { UserModel } from '../models/user';
 import { ClientModel } from '../models/client';
 import { TodoModel } from '../models/todo';
+import dotenv from 'dotenv';
+
+
+dotenv.config();
+let database = process.env.DB_NAME
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: './test.db',
+  storage: `./${database}.db`,
 });
 
 const User = UserModel.initialize(sequelize);

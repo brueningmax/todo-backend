@@ -1,25 +1,13 @@
 import { sequelize, User } from ".";
 import jwt from 'jsonwebtoken';
 import {secret} from '../index'
-
-
-type LoginData = {
-    username: string,
-    password: string
-}
-
-type JWTUser = {
-    id: number,
-    name: string,
-    role: number
-}
+import { LoginData, JWTUser } from "./utils/types";
 
 function generateToken(payload: JWTUser) {
     const token = jwt.sign(payload, secret, { expiresIn: '1h' }); 
     console.log(token)
     return token
 }
-
 
 export const getToken = async (loginData: LoginData) => {
     try {

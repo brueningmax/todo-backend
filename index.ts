@@ -6,7 +6,8 @@ import clientsRouter from './routes/clients';
 import authRouter from './routes/auth'
 import mainRouter from './routes/main'
 import bodyParser from 'body-parser';
-import { jwtAuth } from './middleware/cookieJWTauth';
+import { jwtAuth } from './middleware/JWTauth';
+import { AuthenticatedRequest } from './views/utils/types';
 
 dotenv.config();
 
@@ -18,11 +19,9 @@ export const secret = String(process.env.SECRET);
 //   res.send('Express + TypeScript Server');
 // });
 
-app.post('/', jwtAuth, (req: Request, res: Response) => {
+app.post('/', jwtAuth, (req: AuthenticatedRequest, res: Response) => {
   res.send(req.user);
 });
-
-//get whole table
 
 app.use(bodyParser.json())
 app.use('/board', mainRouter)

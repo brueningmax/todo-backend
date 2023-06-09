@@ -1,12 +1,12 @@
 import { sequelize, User, Todo, Client } from ".";
 import { ClientModel } from "../models/client";
 import { TodoModel } from "../models/todo";
-import { sortTodos } from "./utils";
+import { sortTodos } from "./utils/utils";
 
 
 export const getBoard = async (req: Request) => {
     let users = await User.findAll({
-      attributes: ['id', 'name', 'role'],
+      attributes: ['id', 'name', 'isAdmin'],
       include: [
         {
           model: TodoModel,
@@ -20,6 +20,7 @@ export const getBoard = async (req: Request) => {
     })
     const formattedData = await users.map(user => {
       const { id, name, role, todos } = user.dataValues;
+
       let todosData = todos.map(todo => {
         let client = todo.dataValues.ClientModel.dataValues
         todo.dataValues.client = client

@@ -1,8 +1,8 @@
-import { sequelize, User, Todo, Client } from ".";
+import { sequelize, Todo, Client } from ".";
 import { ClientModel } from "../models/client";
 import { UserModel } from "../models/user";
-import { sortTodos } from "./utils";
-
+import { sortTodos } from "./utils/utils";
+import { TodoType } from './utils/types'
 
 export const getTodos = async () => {
   let todos = await Todo.findAll({
@@ -39,51 +39,30 @@ export const getTodoByID = async (id: string) => {
   return formattedData;
 }
 
-type User = {
-  name: string;
-  password?: string;
-  role?: string;
-};
-
-type Todo = {
-  priority: string,
-  type: string,
-  notes: string,
-  status: string,
-  next_todo?: number | null,
-  previous_todo?: number | null,
-  user: number,
-  client: number,
-  month: string,
-  year: number
-}
-
-export const createTodo = async (newTodo: Todo) => {
+export const createTodo = async (newTodo: TodoType) => {
   try {
 
     // get last todo => todo.id
-    let last_todo = await Todo.findOne({
+    let lastTodo = await Todo.findOne({
       where: {
         user: 1,
-        next_todo: null
+        nextTodo: null
       }
     })
-
-    if (last_todo) {
-      newTodo.previous_todo = last_todo.id
+    if (lastTodo) {
+      newTodo.previousTodo = lastTodo.id
     } else {
-      newTodo.previous_todo = null
+      newTodo.previousTodo = null
     }
-
-
+    
     newTodo.status = "open"
-    newTodo.next_todo = null
+    newTodo.nextTodo = null
     newTodo.user = 1
     const createdTodo = await Todo.create(newTodo)
 
-    if (last_todo) {
-      last_todo.next_todo = createdTodo.id
-      await last_todo?.save()
+    if (lastTodo) {
+      lastTodo.nextTodo = createdTodo.id
+      await lastTodo?.save()
     }
 
     return { status: 201, json: createdTodo };
@@ -94,13 +73,41 @@ export const createTodo = async (newTodo: Todo) => {
 }
 
 // update Todo
-export const updateTodo = async (id: string, todoData: Partial<Todo>) => {
+export const updateTodo = async (id: string, todoData: Partial<TodoType>) => {
   try {
     const todo = await Todo.findByPk(parseInt(id))
     if (todo) {
       for (let key in todoData) {
-        todo[key] = todoData[key]
+        (todo as any)[key] = (todoData as any)[key]
       }
+      await todo.save()
+    }
+    return { status: 200, json: todo };
+  } catch (error) {
+    console.error('Error updating todo:', error);
+    return { status: 500, json: { error: 'Failed to update todo' } };
+  }
+}
+
+// complete Todo
+export const completeTodo = async (id: string) => {
+  try {
+    const todo = await Todo.findByPk(parseInt(id))
+    if (todo) {
+      if (todo.nextTodo) {
+        const nextTodo = await Todo.findByPk(parseInt(todo.nextTodo))
+        nextTodo.previousTodo = todo.previousTodo
+        await nextTodo?.save()
+      }
+      if (todo.previousTodo) {
+        const previousTodo = await Todo.findByPk(parseInt(todo.previousTodo))
+        previousTodo.nextTodo = todo.nextTodo
+        await previousTodo?.save()
+      }
+      
+      // TODO: putting the completed todo into the right spot 
+      todo.status = 'completed'
+      todo.user = 2
       await todo.save()
     }
     return { status: 200, json: todo };
@@ -127,10 +134,7 @@ export const deleteTodo = async (id: string) => {
 }
 
 // delete completed todos
-export const deleteCompletedTodos = async (req: Request) => {
-  if (req.user.role != 2) {
-    return { status: 401, json: { error: 'Not authorized' } };
-  }
+export const deleteCompletedTodos = async () => {
   try {
     await Todo.destroy({
       where: {
@@ -146,48 +150,54 @@ export const deleteCompletedTodos = async (req: Request) => {
   }
 }
 
-
 export const moveTodo = async (req: Request) => {
+  const move = req.body
   try {
-    let movedTodo = await Todo.findByPk(req.body.todoId)
+    let movedTodo = await Todo.findByPk(move.todoId)
+    console.log(moveTodo)
+    if (moveTodo === null) {
+      return { status: 404, json: { error: 'todo not found' } };
+    } else {
 
-    movedTodo.user === req.body?.to.userID
-    movedTodo?.previous_todo = req.body.to.previous_todo ? req.body.to.previous_todo : null;
-    movedTodo?.next_todo = req.body.to.next_todo ? req.body.to.next_todo : null;
+    movedTodo.user = move.to.userId
+    movedTodo?.previousTodo = move.to.previousTodo ? move.to.previousTodo : null;
+    movedTodo?.nextTodo = move.to.nextTodo ? move.to.nextTodo : null;
+    await movedTodo?.save()
 
-    if (req.body.from.previous_todo) {
-      let old_previous = await Todo.findByPk(req.body.from.previous_todo)
-      if (old_previous) {
-        old_previous.next_todo = req.body.from.next_todo;
-        old_previous?.save()
+    if (move.from.previousTodo) {
+      let oldPrevious = await Todo.findByPk(move.from.previousTodo)
+      if (oldPrevious) {
+        oldPrevious.nextTodo = move.from.nextTodo;
+        await oldPrevious?.save()
       }
     }
 
-    if (req.body.from.next_todo) {
-      let old_next = await Todo.findByPk(req.body.from.next_todo)
-      if (old_next) {
-        old_next.previous_todo = req.body.from.previous_todo;
-        old_next?.save()
+    if (move.from.nextTodo) {
+      let oldNext = await Todo.findByPk(move.from.nextTodo)
+      if (oldNext) {
+        oldNext.previousTodo = move.from.previousTodo;
+        await oldNext?.save()
       }
     }
 
-    if (req.body.to.previous_todo) {
-      let new_previous = await Todo.findByPk(req.body.to.previous_todo)
-      if (new_previous) {
-        new_previous.previous_todo = req.body.to.previous_todo;
-        new_previous?.save()
+    if (move.to.previousTodo) {
+      let newPrevious = await Todo.findByPk(move.to.previousTodo)
+      if (newPrevious) {
+        newPrevious.previousTodo = move.to.previousTodo;
+        await newPrevious?.save()
       }
     }
 
-    if (req.body.to.next_todo) {
-      let new_next = await Todo.findByPk(req.body.to.next_todo)
-      if (new_next) {
-        new_next.previous_todo = req.body.to.next_todo;
-        new_next?.save()
+    if (move.to.nextTodo) {
+      let newNext = await Todo.findByPk(move.to.nextTodo)
+      if (newNext) {
+        newNext.previousTodo = move.to.nextTodo;
+        await newNext?.save()
       }
     }
 
     return { status: 200, json: movedTodo };
+  }
   } catch (error) {
     console.error('Error updating todo:', error);
     return { status: 500, json: { error: 'Failed to update todo' } };

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.moveTodo = exports.deleteCompletedTodos = exports.deleteTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
+exports.moveTodo = exports.deleteCompletedTodos = exports.deleteTodo = exports.completeTodo = exports.updateTodo = exports.createTodo = exports.getTodoByID = exports.getTodos = void 0;
 const _1 = require(".");
 const client_1 = require("../models/client");
 const user_1 = require("../models/user");
@@ -51,25 +51,25 @@ exports.getTodoByID = getTodoByID;
 const createTodo = (newTodo) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // get last todo => todo.id
-        let last_todo = yield _1.Todo.findOne({
+        let lastTodo = yield _1.Todo.findOne({
             where: {
                 user: 1,
-                next_todo: null
+                nextTodo: null
             }
         });
-        if (last_todo) {
-            newTodo.previous_todo = last_todo.id;
+        if (lastTodo) {
+            newTodo.previousTodo = lastTodo.id;
         }
         else {
-            newTodo.previous_todo = null;
+            newTodo.previousTodo = null;
         }
         newTodo.status = "open";
-        newTodo.next_todo = null;
+        newTodo.nextTodo = null;
         newTodo.user = 1;
         const createdTodo = yield _1.Todo.create(newTodo);
-        if (last_todo) {
-            last_todo.next_todo = createdTodo.id;
-            yield (last_todo === null || last_todo === void 0 ? void 0 : last_todo.save());
+        if (lastTodo) {
+            lastTodo.nextTodo = createdTodo.id;
+            yield (lastTodo === null || lastTodo === void 0 ? void 0 : lastTodo.save());
         }
         return { status: 201, json: createdTodo };
     }
@@ -97,6 +97,34 @@ const updateTodo = (id, todoData) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.updateTodo = updateTodo;
+// complete Todo
+const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const todo = yield _1.Todo.findByPk(parseInt(id));
+        if (todo) {
+            if (todo.nextTodo) {
+                const nextTodo = yield _1.Todo.findByPk(parseInt(todo.nextTodo));
+                nextTodo.previousTodo = todo.previousTodo;
+                yield (nextTodo === null || nextTodo === void 0 ? void 0 : nextTodo.save());
+            }
+            if (todo.previousTodo) {
+                const previousTodo = yield _1.Todo.findByPk(parseInt(todo.previousTodo));
+                previousTodo.nextTodo = todo.nextTodo;
+                yield (previousTodo === null || previousTodo === void 0 ? void 0 : previousTodo.save());
+            }
+            // TODO: putting the completed todo into the right spot 
+            todo.status = 'completed';
+            todo.user = 2;
+            yield todo.save();
+        }
+        return { status: 200, json: todo };
+    }
+    catch (error) {
+        console.error('Error updating todo:', error);
+        return { status: 500, json: { error: 'Failed to update todo' } };
+    }
+});
+exports.completeTodo = completeTodo;
 //delete Todo
 const deleteTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -116,10 +144,7 @@ const deleteTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.deleteTodo = deleteTodo;
 // delete completed todos
-const deleteCompletedTodos = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.user.role != 2) {
-        return { status: 401, json: { error: 'Not authorized' } };
-    }
+const deleteCompletedTodos = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield _1.Todo.destroy({
             where: {
@@ -136,41 +161,48 @@ const deleteCompletedTodos = (req) => __awaiter(void 0, void 0, void 0, function
 });
 exports.deleteCompletedTodos = deleteCompletedTodos;
 const moveTodo = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    const move = req.body;
     try {
-        let movedTodo = yield _1.Todo.findByPk(req.body.todoId);
-        movedTodo.user === ((_a = req.body) === null || _a === void 0 ? void 0 : _a.to.userID);
-        movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.previous_todo = req.body.to.previous_todo ? req.body.to.previous_todo : null;
-        movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.next_todo = req.body.to.next_todo ? req.body.to.next_todo : null;
-        if (req.body.from.previous_todo) {
-            let old_previous = yield _1.Todo.findByPk(req.body.from.previous_todo);
-            if (old_previous) {
-                old_previous.next_todo = req.body.from.next_todo;
-                old_previous === null || old_previous === void 0 ? void 0 : old_previous.save();
-            }
+        let movedTodo = yield _1.Todo.findByPk(move.todoId);
+        console.log(exports.moveTodo);
+        if (exports.moveTodo === null) {
+            return { status: 404, json: { error: 'todo not found' } };
         }
-        if (req.body.from.next_todo) {
-            let old_next = yield _1.Todo.findByPk(req.body.from.next_todo);
-            if (old_next) {
-                old_next.previous_todo = req.body.from.previous_todo;
-                old_next === null || old_next === void 0 ? void 0 : old_next.save();
+        else {
+            movedTodo.user = move.to.userId;
+            movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.previousTodo = move.to.previousTodo ? move.to.previousTodo : null;
+            movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.nextTodo = move.to.nextTodo ? move.to.nextTodo : null;
+            yield (movedTodo === null || movedTodo === void 0 ? void 0 : movedTodo.save());
+            if (move.from.previousTodo) {
+                let oldPrevious = yield _1.Todo.findByPk(move.from.previousTodo);
+                if (oldPrevious) {
+                    oldPrevious.nextTodo = move.from.nextTodo;
+                    yield (oldPrevious === null || oldPrevious === void 0 ? void 0 : oldPrevious.save());
+                }
             }
-        }
-        if (req.body.to.previous_todo) {
-            let new_previous = yield _1.Todo.findByPk(req.body.to.previous_todo);
-            if (new_previous) {
-                new_previous.previous_todo = req.body.to.previous_todo;
-                new_previous === null || new_previous === void 0 ? void 0 : new_previous.save();
+            if (move.from.nextTodo) {
+                let oldNext = yield _1.Todo.findByPk(move.from.nextTodo);
+                if (oldNext) {
+                    oldNext.previousTodo = move.from.previousTodo;
+                    yield (oldNext === null || oldNext === void 0 ? void 0 : oldNext.save());
+                }
             }
-        }
-        if (req.body.to.next_todo) {
-            let new_next = yield _1.Todo.findByPk(req.body.to.next_todo);
-            if (new_next) {
-                new_next.previous_todo = req.body.to.next_todo;
-                new_next === null || new_next === void 0 ? void 0 : new_next.save();
+            if (move.to.previousTodo) {
+                let newPrevious = yield _1.Todo.findByPk(move.to.previousTodo);
+                if (newPrevious) {
+                    newPrevious.previousTodo = move.to.previousTodo;
+                    yield (newPrevious === null || newPrevious === void 0 ? void 0 : newPrevious.save());
+                }
             }
+            if (move.to.nextTodo) {
+                let newNext = yield _1.Todo.findByPk(move.to.nextTodo);
+                if (newNext) {
+                    newNext.previousTodo = move.to.nextTodo;
+                    yield (newNext === null || newNext === void 0 ? void 0 : newNext.save());
+                }
+            }
+            return { status: 200, json: movedTodo };
         }
-        return { status: 200, json: movedTodo };
     }
     catch (error) {
         console.error('Error updating todo:', error);

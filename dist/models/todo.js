@@ -37,11 +37,11 @@ class TodoModel extends sequelize_1.Model {
             //     type: DataTypes.INTEGER,
             //     allowNull: false,
             // },
-            next_todo: {
+            nextTodo: {
                 type: sequelize_1.DataTypes.INTEGER,
                 allowNull: true,
             },
-            previous_todo: {
+            previousTodo: {
                 type: sequelize_1.DataTypes.INTEGER,
                 allowNull: true,
             },

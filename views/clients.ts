@@ -62,7 +62,7 @@ export const updateClient = async (id: string, clientData: Partial<Client>) => {
         const client = await Client.findByPk(parseInt(id))
         if (client) {
             for (let key in clientData) {
-                client[key] = clientData[key]
+                (client as any) [key] = (clientData as any)[key]
             }
             await client.save()
         }

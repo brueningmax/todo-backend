@@ -14,7 +14,7 @@ const _1 = require(".");
 const todo_1 = require("../models/todo");
 const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     let users = yield _1.User.findAll({
-        attributes: ['id', 'name', 'password', 'role'],
+        attributes: ['id', 'name', 'password', 'isAdmin'],
         include: [
             {
                 model: todo_1.TodoModel,
@@ -31,12 +31,13 @@ const getUserByID = (id) => __awaiter(void 0, void 0, void 0, function* () {
         where: {
             id: id
         },
-        attributes: ['id', 'name', 'password', 'role']
+        attributes: ['id', 'name', 'password', 'isAdmin']
     });
     const formattedData = users.map(user => user.dataValues);
     return formattedData;
 });
 exports.getUserByID = getUserByID;
+//create User
 const createUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, password, role } = userData;

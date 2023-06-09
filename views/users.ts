@@ -1,11 +1,12 @@
 import { sequelize, User } from ".";
 import { TodoModel } from "../models/todo";
+import { UserType } from "./utils/types"
 
 
 
 export const getUsers = async () => {
     let users = await User.findAll({
-        attributes: ['id', 'name', 'password', 'role'],
+        attributes: ['id', 'name', 'password', 'isAdmin'],
         include: [
             {
                 model: TodoModel,
@@ -22,7 +23,7 @@ export const getUserByID = async (id: string) => {
         where: {
             id: id
         },
-        attributes: ['id', 'name', 'password', 'role']
+        attributes: ['id', 'name', 'password', 'isAdmin']
     })
     const formattedData = users.map(user => user.dataValues)
     return formattedData;
@@ -30,14 +31,7 @@ export const getUserByID = async (id: string) => {
 
 
 //create User
-
-type User = {
-    name: string;
-    password?: string;
-    role?: string;
-  };
-
-export const createUser = async (userData: User) => {
+export const createUser = async (userData: UserType) => {
     try {
         const { name, password, role } = userData;
     
@@ -56,13 +50,13 @@ export const createUser = async (userData: User) => {
 }
 
 //update User
-export const updateUser = async (id: string, userData: Partial<User>) => {
+export const updateUser = async (id: string, userData: Partial<UserType>) => {
     try {
 
         const user = await User.findByPk(parseInt(id))
         if (user) {
             for (let key in userData) {
-                user[key] = userData[key]
+                (user as any)[key] = (userData as any)[key]
             }
             await user.save()
         }

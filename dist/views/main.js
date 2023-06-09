@@ -13,10 +13,10 @@ exports.getBoard = void 0;
 const _1 = require(".");
 const client_1 = require("../models/client");
 const todo_1 = require("../models/todo");
-const utils_1 = require("./utils");
+const utils_1 = require("./utils/utils");
 const getBoard = (req) => __awaiter(void 0, void 0, void 0, function* () {
     let users = yield _1.User.findAll({
-        attributes: ['id', 'name', 'role'],
+        attributes: ['id', 'name', 'isAdmin'],
         include: [
             {
                 model: todo_1.TodoModel,

@@ -51,11 +51,11 @@ export class TodoModel extends Model {
                 //     type: DataTypes.INTEGER,
                 //     allowNull: false,
                 // },
-                next_todo: {
+                nextTodo: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
                 },
-                previous_todo: {
+                previousTodo: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
                 },

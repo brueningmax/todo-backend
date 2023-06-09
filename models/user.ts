@@ -29,9 +29,14 @@ export class UserModel extends Model {
           allowNull: false,
           defaultValue: sequelize.col('name'),
         },
-        role: {
+        // role: {
+        //   type: DataTypes.INTEGER,
+        //   allowNull: true,
+        //   defaultValue: 0
+        // },
+        isAdmin: {
           type: DataTypes.INTEGER,
-          allowNull: true,
+          allowNull: false,
           defaultValue: 0
         },
       },

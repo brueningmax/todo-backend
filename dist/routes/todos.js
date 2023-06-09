@@ -13,27 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const cookieJWTauth_1 = require("../middleware/cookieJWTauth");
+const JWTauth_1 = require("../middleware/JWTauth");
 const todos_1 = require("../views/todos");
 const router = express_1.default.Router();
-// get all todo
-router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.getTodos)();
-    res.send(data);
-}));
-// get todo
-router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.getTodoByID)(req.params.id);
-    res.send(data);
-}));
 // create todo
-router.post('/new', cookieJWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/new', JWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let data = yield (0, todos_1.createTodo)(req.body);
     res.status(data.status).json(data.json);
 }));
-// update todo
-router.patch('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.updateTodo)(req.params.id, req.body);
+// move todo
+router.patch('/moveTodo', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.moveTodo)(req);
     res.status(data.status).json(data.json);
 }));
 // delete todo
@@ -41,9 +31,29 @@ router.delete('/delete/:id', (req, res) => __awaiter(void 0, void 0, void 0, fun
     let data = yield (0, todos_1.deleteTodo)(req.params.id);
     res.sendStatus(data.status);
 }));
-// delete completed todos
-router.delete('/deleteCompleted', cookieJWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.deleteCompletedTodos)(req);
+// complete todo
+router.patch('/complete/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.completeTodo)(req.params.id);
     res.status(data.status).json(data.json);
+}));
+// delete completed todos
+router.delete('/deleteCompleted', JWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.deleteCompletedTodos)();
+    res.status(data.status).json(data.json);
+}));
+// get todo
+router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.getTodoByID)(req.params.id);
+    res.send(data);
+}));
+// update todo
+router.patch('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.updateTodo)(req.params.id, req.body);
+    res.status(data.status).json(data.json);
+}));
+// get all todo
+router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let data = yield (0, todos_1.getTodos)();
+    res.send(data);
 }));
 exports.default = router;
