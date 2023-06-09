@@ -104,8 +104,66 @@ export const completeTodo = async (id: string) => {
         previousTodo.nextTodo = todo.nextTodo
         await previousTodo?.save()
       }
+
+      // const priority = ['salary', 'high', 'medium', 'low']
+      const priority = ['low', 'medium', 'high', 'salary']
+      const indexOfPrio = priority.indexOf(todo.priority)
+      const completedTodos = await Todo.findAll({
+        where: {user:2}
+      })
+
+      let previousTodo = null
+      let nextTodo = null
       
-      // TODO: putting the completed todo into the right spot 
+      if (completedTodos.length > 0) {
+        const sortedTodos = sortTodos(completedTodos).reverse()
+
+        const priorityEnds = []
+        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'low'))
+        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'medium'))
+        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'high'))
+        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'salary'))
+
+        if (priorityEnds[indexOfPrio]) {
+          previousTodo = priorityEnds[indexOfPrio].id
+          nextTodo = priorityEnds[indexOfPrio].nextTodo
+        } else {
+          // looking for todo to attach to
+          let foundPrevious = false
+          for (let i = indexOfPrio; i >= 0; i--) {
+            if (priorityEnds[i]) {
+              previousTodo = priorityEnds[indexOfPrio].id
+              nextTodo = priorityEnds[indexOfPrio].nextTodo
+              foundprevious = true
+              break;
+            }
+          }
+          // if we didnt find a point to attach to, we put the todo there and add the last element of the reversed array
+          if (!foundPrevious) {
+            previousTodo = null
+            if (indexOfPrio === priority.length - 1){
+              nextTodo = null
+            } else {
+              nextTodo = sortedTodos[sortTodos.length - 1].id
+            }
+          }
+        }
+
+        if (previousTodo){
+          const oldPrevious = await Todo.findByPk(previousTodo)
+          oldPrevious.nextTodo = todo.id
+          oldPrevious?.save()
+        }
+        
+        if (nextTodo){
+          const oldNext = await Todo.findByPk(nextTodo)
+          oldNext.previousTodo = todo.id
+          oldNext?.save()
+        }
+      }
+        
+      todo.previousTodo = previousTodo
+      todo.nextTodo = nextTodo
       todo.status = 'completed'
       todo.user = 2
       await todo.save()
