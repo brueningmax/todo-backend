@@ -13,6 +13,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const main_1 = __importDefault(require("./routes/main"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const JWTauth_1 = require("./middleware/JWTauth");
+const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
@@ -23,6 +24,7 @@ exports.secret = String(process.env.SECRET);
 app.post('/', JWTauth_1.jwtAuth, (req, res) => {
     res.send(req.user);
 });
+app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
 app.use('/board', main_1.default);
 app.use('/users', users_1.default);

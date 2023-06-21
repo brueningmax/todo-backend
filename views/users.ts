@@ -33,13 +33,13 @@ export const getUserByID = async (id: string) => {
 //create User
 export const createUser = async (userData: UserType) => {
     try {
-        const { name, password, role } = userData;
-    
+        const { name, password, isAdmin } = userData;
+        
         // Create a new user instance
         const user = await User.create({
             name, 
             password, 
-            role
+            isAdmin
         });
 
         return {status: 201, json: user};
@@ -52,7 +52,6 @@ export const createUser = async (userData: UserType) => {
 //update User
 export const updateUser = async (id: string, userData: Partial<UserType>) => {
     try {
-
         const user = await User.findByPk(parseInt(id))
         if (user) {
             for (let key in userData) {

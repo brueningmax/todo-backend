@@ -14,7 +14,7 @@ const _1 = require(".");
 const client_1 = require("../models/client");
 const todo_1 = require("../models/todo");
 const utils_1 = require("./utils/utils");
-const getBoard = (req) => __awaiter(void 0, void 0, void 0, function* () {
+const getBoard = () => __awaiter(void 0, void 0, void 0, function* () {
     let users = yield _1.User.findAll({
         attributes: ['id', 'name', 'isAdmin'],
         include: [
@@ -27,18 +27,19 @@ const getBoard = (req) => __awaiter(void 0, void 0, void 0, function* () {
         order: [
             _1.sequelize.literal(`case when UserModel.id = 1 then 1 when UserModel.id = 2 then 3 else 2 end`),
         ],
+        defaultValue: [],
     });
     const formattedData = yield users.map(user => {
-        const { id, name, role, todos } = user.dataValues;
+        const { id, name, isAdmin, todos } = user.dataValues;
         let todosData = todos.map(todo => {
             let client = todo.dataValues.ClientModel.dataValues;
             todo.dataValues.client = client;
             delete todo.dataValues.ClientModel;
             return todo.dataValues;
         });
-        todosData = (0, utils_1.sortTodos)(todosData);
+        todosData = todosData[0] ? (0, utils_1.sortTodos)(todosData) : [];
         return {
-            user: { id, name, role },
+            user: { id, name, isAdmin },
             todos: todosData
         };
     });

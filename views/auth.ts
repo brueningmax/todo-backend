@@ -21,7 +21,7 @@ export const getToken = async (loginData: LoginData) => {
                 user: {
                     id: user.id, 
                     name: user.name, 
-                    role: user.role
+                    isAdmin: user.isAdmin === 1
                 }, 
                 token: token 
             } 

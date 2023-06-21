@@ -13,6 +13,8 @@ exports.moveTodo = exports.deleteCompletedTodos = exports.deleteTodo = exports.c
 const _1 = require(".");
 const client_1 = require("../models/client");
 const user_1 = require("../models/user");
+const utils_1 = require("./utils/utils");
+const main_1 = require("./main");
 const getTodos = () => __awaiter(void 0, void 0, void 0, function* () {
     let todos = yield _1.Todo.findAll({
         // attributes: ['id', 'type'],
@@ -48,30 +50,106 @@ const getTodoByID = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return formattedData;
 });
 exports.getTodoByID = getTodoByID;
+// export const createTodo = async (newTodo: TodoType) => {
+//   try {
+//     // get last todo => todo.id
+//     let lastTodo = await Todo.findOne({
+//       where: {
+//         user: 1,
+//         nextTodo: null
+//       }
+//     })
+//     if (lastTodo) {
+//       newTodo.previousTodo = lastTodo.id
+//     } else {
+//       newTodo.previousTodo = null
+//     }
+//     newTodo.status = "open"
+//     newTodo.nextTodo = null
+//     newTodo.user = 1
+//     const createdTodo = await Todo.create(newTodo)
+//     if (lastTodo) {
+//       lastTodo.nextTodo = createdTodo.id
+//       await lastTodo?.save()
+//     }
+//     const data = await getBoard()
+//     data.status = 201
+//     return data;
+//   } catch (error) {
+//     console.error('Error creating todo:', error);
+//     return { status: 500, json: { error: 'Failed to create todo' } };
+//   }
+// }
 const createTodo = (newTodo) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // get last todo => todo.id
-        let lastTodo = yield _1.Todo.findOne({
-            where: {
-                user: 1,
-                nextTodo: null
-            }
-        });
-        if (lastTodo) {
-            newTodo.previousTodo = lastTodo.id;
-        }
-        else {
-            newTodo.previousTodo = null;
-        }
         newTodo.status = "open";
         newTodo.nextTodo = null;
+        newTodo.previousTodo = null;
         newTodo.user = 1;
         const createdTodo = yield _1.Todo.create(newTodo);
-        if (lastTodo) {
-            lastTodo.nextTodo = createdTodo.id;
-            yield (lastTodo === null || lastTodo === void 0 ? void 0 : lastTodo.save());
+        const priority = ['salary', 'high', 'medium', 'low'];
+        const indexOfPrio = priority.indexOf(createdTodo.priority);
+        const unassignedTodos = yield _1.Todo.findAll({
+            where: { user: 1 }
+        });
+        let previousTodo = null;
+        let nextTodo = null;
+        if (unassignedTodos.length > 1) {
+            const sortedTodos = (0, utils_1.sortTodos)(unassignedTodos).reverse();
+            const priorityEnds = [];
+            priorityEnds.push(sortedTodos.find(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'salary'));
+            priorityEnds.push(sortedTodos.find(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'high'));
+            priorityEnds.push(sortedTodos.find(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'medium'));
+            priorityEnds.push(sortedTodos.find(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'low'));
+            console.log(priorityEnds);
+            if (priorityEnds[indexOfPrio]) {
+                previousTodo = priorityEnds[indexOfPrio].id;
+                nextTodo = priorityEnds[indexOfPrio].nextTodo;
+            }
+            else {
+                // looking for todo to attach to
+                let foundPrevious = false;
+                for (let i = indexOfPrio; i >= 0; i--) {
+                    if (priorityEnds[i]) {
+                        previousTodo = priorityEnds[i].id;
+                        nextTodo = priorityEnds[i].nextTodo;
+                        foundPrevious = true;
+                        break;
+                    }
+                }
+                // if we didnt find a point to attach to, we put the todo there and add the last element of the reversed array
+                if (!foundPrevious) {
+                    previousTodo = null;
+                    if (indexOfPrio === priority.length - 1) {
+                        nextTodo = null;
+                    }
+                    else {
+                        nextTodo = sortedTodos[sortedTodos.length - 1].id;
+                    }
+                }
+            }
+            console.log('previousTodo: ', previousTodo);
+            console.log('nextTodo: ', nextTodo);
+            if (previousTodo) {
+                const oldPrevious = yield _1.Todo.findByPk(previousTodo);
+                oldPrevious.nextTodo = createdTodo.id;
+                oldPrevious.save();
+            }
+            if (nextTodo) {
+                const oldNext = yield _1.Todo.findByPk(nextTodo);
+                oldNext.previousTodo = createdTodo.id;
+                oldNext.save();
+            }
         }
-        return { status: 201, json: createdTodo };
+        createdTodo.previousTodo = previousTodo;
+        createdTodo.nextTodo = nextTodo;
+        createdTodo.status = 'open';
+        createdTodo.user = 1;
+        console.log(exports.createTodo);
+        const save = yield createdTodo.save();
+        const data = yield (0, main_1.getBoard)();
+        data.status = 201;
+        return data;
     }
     catch (error) {
         console.error('Error creating todo:', error);
@@ -112,7 +190,60 @@ const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
                 previousTodo.nextTodo = todo.nextTodo;
                 yield (previousTodo === null || previousTodo === void 0 ? void 0 : previousTodo.save());
             }
-            // TODO: putting the completed todo into the right spot 
+            // const priority = ['salary', 'high', 'medium', 'low']
+            const priority = ['low', 'medium', 'high', 'salary'];
+            const indexOfPrio = priority.indexOf(todo.priority);
+            const completedTodos = yield _1.Todo.findAll({
+                where: { user: 2 }
+            });
+            let previousTodo = null;
+            let nextTodo = null;
+            if (completedTodos.length > 0) {
+                const sortedTodos = (0, utils_1.sortTodos)(completedTodos).reverse();
+                const priorityEnds = [];
+                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'low'));
+                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'medium'));
+                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'high'));
+                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'salary'));
+                if (priorityEnds[indexOfPrio]) {
+                    previousTodo = priorityEnds[indexOfPrio].id;
+                    nextTodo = priorityEnds[indexOfPrio].nextTodo;
+                }
+                else {
+                    // looking for todo to attach to
+                    let foundPrevious = false;
+                    for (let i = indexOfPrio; i >= 0; i--) {
+                        if (priorityEnds[i]) {
+                            previousTodo = priorityEnds[indexOfPrio].id;
+                            nextTodo = priorityEnds[indexOfPrio].nextTodo;
+                            foundprevious = true;
+                            break;
+                        }
+                    }
+                    // if we didnt find a point to attach to, we put the todo there and add the last element of the reversed array
+                    if (!foundPrevious) {
+                        previousTodo = null;
+                        if (indexOfPrio === priority.length - 1) {
+                            nextTodo = null;
+                        }
+                        else {
+                            nextTodo = sortedTodos[utils_1.sortTodos.length - 1].id;
+                        }
+                    }
+                }
+                if (previousTodo) {
+                    const oldPrevious = yield _1.Todo.findByPk(previousTodo);
+                    oldPrevious.nextTodo = todo.id;
+                    oldPrevious === null || oldPrevious === void 0 ? void 0 : oldPrevious.save();
+                }
+                if (nextTodo) {
+                    const oldNext = yield _1.Todo.findByPk(nextTodo);
+                    oldNext.previousTodo = todo.id;
+                    oldNext === null || oldNext === void 0 ? void 0 : oldNext.save();
+                }
+            }
+            todo.previousTodo = previousTodo;
+            todo.nextTodo = nextTodo;
             todo.status = 'completed';
             todo.user = 2;
             yield todo.save();

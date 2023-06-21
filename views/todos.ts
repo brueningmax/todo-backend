@@ -3,6 +3,7 @@ import { ClientModel } from "../models/client";
 import { UserModel } from "../models/user";
 import { sortTodos } from "./utils/utils";
 import { TodoType } from './utils/types'
+import { getBoard } from './main'
 
 export const getTodos = async () => {
   let todos = await Todo.findAll({
@@ -39,38 +40,123 @@ export const getTodoByID = async (id: string) => {
   return formattedData;
 }
 
-export const createTodo = async (newTodo: TodoType) => {
-  try {
+// export const createTodo = async (newTodo: TodoType) => {
+//   try {
 
-    // get last todo => todo.id
-    let lastTodo = await Todo.findOne({
-      where: {
-        user: 1,
-        nextTodo: null
-      }
-    })
-    if (lastTodo) {
-      newTodo.previousTodo = lastTodo.id
-    } else {
-      newTodo.previousTodo = null
-    }
+//     // get last todo => todo.id
+//     let lastTodo = await Todo.findOne({
+//       where: {
+//         user: 1,
+//         nextTodo: null
+//       }
+//     })
+//     if (lastTodo) {
+//       newTodo.previousTodo = lastTodo.id
+//     } else {
+//       newTodo.previousTodo = null
+//     }
     
-    newTodo.status = "open"
-    newTodo.nextTodo = null
-    newTodo.user = 1
-    const createdTodo = await Todo.create(newTodo)
+//     newTodo.status = "open"
+//     newTodo.nextTodo = null
+//     newTodo.user = 1
+//     const createdTodo = await Todo.create(newTodo)
 
-    if (lastTodo) {
-      lastTodo.nextTodo = createdTodo.id
-      await lastTodo?.save()
+//     if (lastTodo) {
+//       lastTodo.nextTodo = createdTodo.id
+//       await lastTodo?.save()
+//     }
+
+//     const data = await getBoard()
+//     data.status = 201
+//     return data;
+//   } catch (error) {
+//     console.error('Error creating todo:', error);
+//     return { status: 500, json: { error: 'Failed to create todo' } };
+//   }
+// }
+
+export const createTodo = async (newTodo: TodoType) => {
+try {
+  
+  newTodo.status = "open"
+  newTodo.nextTodo = null
+  newTodo.previousTodo = null
+  newTodo.user = 1
+  const createdTodo = await Todo.create(newTodo)
+    const priority = ['salary', 'high', 'medium', 'low']
+    const indexOfPrio = priority.indexOf(createdTodo.priority)
+    const unassignedTodos = await Todo.findAll({
+      where: {user:1}
+    })
+
+    let previousTodo = null
+    let nextTodo = null
+    if (unassignedTodos.length > 1) {
+      const sortedTodos = sortTodos(unassignedTodos).reverse()
+      
+      const priorityEnds: Array<any> = []
+      priorityEnds.push(sortedTodos.find(todo => todo?.priority == 'salary'))
+      priorityEnds.push(sortedTodos.find(todo => todo?.priority == 'high'))
+      priorityEnds.push(sortedTodos.find(todo => todo?.priority == 'medium'))
+      priorityEnds.push(sortedTodos.find(todo => todo?.priority == 'low'))
+
+      console.log(priorityEnds)
+      if (priorityEnds[indexOfPrio]) {
+        previousTodo = priorityEnds[indexOfPrio].id
+        nextTodo = priorityEnds[indexOfPrio].nextTodo
+      } else {
+        // looking for todo to attach to
+        let foundPrevious = false
+        for (let i = indexOfPrio; i >= 0; i--) {
+          if (priorityEnds[i]) {
+            previousTodo = priorityEnds[i].id
+            nextTodo = priorityEnds[i].nextTodo
+            foundPrevious = true
+            break;
+          }
+        }
+        // if we didnt find a point to attach to, we put the todo there and add the last element of the reversed array
+        if (!foundPrevious) {
+          previousTodo = null
+          if (indexOfPrio === priority.length - 1){
+            nextTodo = null
+          } else {
+            nextTodo = sortedTodos[sortedTodos.length - 1].id
+          }
+        }
+      }
+
+      console.log('previousTodo: 'previousTodo)
+      console.log('nextTodo: 'nextTodo)
+
+      if (previousTodo){
+        const oldPrevious = await Todo.findByPk(previousTodo)
+        oldPrevious.nextTodo = createdTodo.id
+        oldPrevious.save()
+      }
+      
+      if (nextTodo){
+        const oldNext = await Todo.findByPk(nextTodo)
+        oldNext.previousTodo = createdTodo.id
+        oldNext.save()
+      }
     }
-
-    return { status: 201, json: createdTodo };
+      
+    createdTodo.previousTodo = previousTodo
+    createdTodo.nextTodo = nextTodo
+    createdTodo.status = 'open'
+    createdTodo.user = 1
+    console.log(createTodo)
+    const save = await createdTodo.save()
+    const data = await getBoard()
+    data.status = 201
+    return data;
   } catch (error) {
     console.error('Error creating todo:', error);
     return { status: 500, json: { error: 'Failed to create todo' } };
   }
 }
+
 
 // update Todo
 export const updateTodo = async (id: string, todoData: Partial<TodoType>) => {
@@ -117,12 +203,13 @@ export const completeTodo = async (id: string) => {
       
       if (completedTodos.length > 0) {
         const sortedTodos = sortTodos(completedTodos).reverse()
+        
+        const priorityEnds: Array<any> = []
+        priorityEnds.push(sortedTodos.find(todo => todo.priority = 'low'))
+        priorityEnds.push(sortedTodos.find(todo => todo.priority = 'medium'))
+        priorityEnds.push(sortedTodos.find(todo => todo.priority = 'high'))
+        priorityEnds.push(sortedTodos.find(todo => todo.priority = 'salary'))
 
-        const priorityEnds = []
-        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'low'))
-        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'medium'))
-        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'high'))
-        let priorityEnds.push(sortedTodos.find(todo => todo.priority = 'salary'))
 
         if (priorityEnds[indexOfPrio]) {
           previousTodo = priorityEnds[indexOfPrio].id

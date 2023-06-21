@@ -11,7 +11,7 @@ export const sortTodos = (array) => {
     });
     
     while (sortedArray.length < array.length){
-        let nextTodo_id = String(sortedArray[sortedArray.length - 1].nextTodo)
+        let nextTodo_id = String(sortedArray[sortedArray.length - 1]?.nextTodo)
         let nextTodo = todoObj[nextTodo_id]
         sortedArray.push(nextTodo) 
     }

@@ -8,6 +8,7 @@ import mainRouter from './routes/main'
 import bodyParser from 'body-parser';
 import { jwtAuth } from './middleware/JWTauth';
 import { AuthenticatedRequest } from './views/utils/types';
+import cors from 'cors'
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.post('/', jwtAuth, (req: AuthenticatedRequest, res: Response) => {
   res.send(req.user);
 });
 
+app.use(cors())
 app.use(bodyParser.json())
 app.use('/board', mainRouter)
 app.use('/users', usersRouter)

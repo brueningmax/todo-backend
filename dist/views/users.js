@@ -40,12 +40,12 @@ exports.getUserByID = getUserByID;
 //create User
 const createUser = (userData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, password, role } = userData;
+        const { name, password, isAdmin } = userData;
         // Create a new user instance
         const user = yield _1.User.create({
             name,
             password,
-            role
+            isAdmin
         });
         return { status: 201, json: user };
     }

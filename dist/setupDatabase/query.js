@@ -39,8 +39,8 @@ const todoTable = `
 const userSetup = `
   INSERT INTO user ('name', 'password', 'isAdmin')
     VALUES 
-    ('Not assigned', 'no_login', 1),
-    ('Compleated', 'no_login', 1),
+    ('not assigned', 'no_login', 1),
+    ('completed', 'no_login', 1),
     ('Admin', 'admin', 1)
 ;
 `;

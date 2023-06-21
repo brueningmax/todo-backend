@@ -32,7 +32,7 @@ const getToken = (loginData) => __awaiter(void 0, void 0, void 0, function* () {
                     user: {
                         id: user.id,
                         name: user.name,
-                        role: user.role
+                        isAdmin: user.isAdmin === 1
                     },
                     token: token
                 }
