@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const JWTauth_1 = require("../middleware/JWTauth");
 const todos_1 = require("../views/todos");
+const main_1 = require("../views/main");
 const router = express_1.default.Router();
 // create todo
 router.post('/new', JWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -23,7 +24,8 @@ router.post('/new', JWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, v
 }));
 // move todo
 router.patch('/moveTodo', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, todos_1.moveTodo)(req);
+    yield (0, todos_1.moveTodo)(req);
+    let data = yield (0, main_1.getBoard)();
     res.status(data.status).json(data.json);
 }));
 // delete todo
@@ -34,6 +36,9 @@ router.delete('/delete/:id', (req, res) => __awaiter(void 0, void 0, void 0, fun
 // complete todo
 router.patch('/complete/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let data = yield (0, todos_1.completeTodo)(req.params.id);
+    if (data.status === 200) {
+        data = yield (0, main_1.getBoard)();
+    }
     res.status(data.status).json(data.json);
 }));
 // delete completed todos

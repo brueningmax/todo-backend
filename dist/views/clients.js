@@ -20,6 +20,9 @@ const getClients = () => __awaiter(void 0, void 0, void 0, function* () {
                 model: todo_1.TodoModel,
                 as: 'todos',
             }
+        ],
+        order: [
+            ['name', 'ASC']
         ]
     });
     const formattedData = clients.map(client => client.dataValues);

@@ -39,8 +39,19 @@ const userSetup: string = `
     VALUES 
     ('not assigned', 'no_login', 1),
     ('completed', 'no_login', 1),
-    ('Admin', 'admin', 1)
+    ('Admin', 'admin', 1),
+    ('user', 'user', 0)
 ;
 `
 
-export const queries = [clientTable, userTable, todoTable, userSetup]
+const clientSetup: string = `
+  INSERT INTO client ('name', 'address', 'contact')
+    VALUES 
+    ('1', '1', '1'),
+    ('2', '2', '2'),
+    ('3', '3', '3')
+;
+`
+
+
+export const queries = [clientTable, userTable, todoTable, userSetup, clientSetup]

@@ -5,7 +5,7 @@ const router = express.Router()
 
 //login
 router.get('/', async (req:Request, res:Response) => {
-    let data = await getBoard(req.body)
+    let data = await getBoard()
     res.status(data.status).json(data.json)
 })
 

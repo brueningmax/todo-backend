@@ -40,41 +40,6 @@ export const getTodoByID = async (id: string) => {
   return formattedData;
 }
 
-// export const createTodo = async (newTodo: TodoType) => {
-//   try {
-
-//     // get last todo => todo.id
-//     let lastTodo = await Todo.findOne({
-//       where: {
-//         user: 1,
-//         nextTodo: null
-//       }
-//     })
-//     if (lastTodo) {
-//       newTodo.previousTodo = lastTodo.id
-//     } else {
-//       newTodo.previousTodo = null
-//     }
-    
-//     newTodo.status = "open"
-//     newTodo.nextTodo = null
-//     newTodo.user = 1
-//     const createdTodo = await Todo.create(newTodo)
-
-//     if (lastTodo) {
-//       lastTodo.nextTodo = createdTodo.id
-//       await lastTodo?.save()
-//     }
-
-//     const data = await getBoard()
-//     data.status = 201
-//     return data;
-//   } catch (error) {
-//     console.error('Error creating todo:', error);
-//     return { status: 500, json: { error: 'Failed to create todo' } };
-//   }
-// }
-
 export const createTodo = async (newTodo: TodoType) => {
 try {
   
@@ -299,7 +264,6 @@ export const moveTodo = async (req: Request) => {
   const move = req.body
   try {
     let movedTodo = await Todo.findByPk(move.todoId)
-    console.log(moveTodo)
     if (moveTodo === null) {
       return { status: 404, json: { error: 'todo not found' } };
     } else {
@@ -328,7 +292,7 @@ export const moveTodo = async (req: Request) => {
     if (move.to.previousTodo) {
       let newPrevious = await Todo.findByPk(move.to.previousTodo)
       if (newPrevious) {
-        newPrevious.previousTodo = move.to.previousTodo;
+        newPrevious.nextTodo = movedTodo.id;
         await newPrevious?.save()
       }
     }
@@ -336,7 +300,7 @@ export const moveTodo = async (req: Request) => {
     if (move.to.nextTodo) {
       let newNext = await Todo.findByPk(move.to.nextTodo)
       if (newNext) {
-        newNext.previousTodo = move.to.nextTodo;
+        newNext.previousTodo = movedTodo.id;
         await newNext?.save()
       }
     }

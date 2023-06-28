@@ -11,6 +11,9 @@ export const getClients = async () => {
                 model: TodoModel,
                 as: 'todos',
             }
+        ],
+        order: [
+            ['name', 'ASC']
         ]
     })
     const formattedData = clients.map(client => client.dataValues)

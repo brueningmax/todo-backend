@@ -1,11 +1,10 @@
 import express, { Express, Request, Response, response } from 'express';
 import { jwtAuth } from '../middleware/JWTauth';
 import { createTodo, getTodos, getTodoByID, updateTodo, deleteTodo, deleteCompletedTodos, moveTodo, completeTodo } from '../views/todos'
+import { getBoard } from '../views/main';
 
 
 const router = express.Router()
-
-
 
 
 // create todo
@@ -17,7 +16,8 @@ router.post('/new', jwtAuth, async (req: Request, res: Response) => {
 
 // move todo
 router.patch('/moveTodo', async (req:Request, res:Response)=> {
-    let data = await moveTodo(req)
+    await moveTodo(req)
+    let data = await getBoard()
     res.status(data.status).json(data.json)
 })
 
@@ -30,6 +30,9 @@ router.delete('/delete/:id', async (req:Request, res:Response) => {
 // complete todo
 router.patch('/complete/:id', async (req:Request, res:Response) => {
     let data = await completeTodo(req.params.id)
+    if (data.status === 200) {
+        data = await getBoard()
+    }
     res.status(data.status).json(data.json)
 })
 

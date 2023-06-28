@@ -17,7 +17,7 @@ const main_1 = require("../views/main");
 const router = express_1.default.Router();
 //login
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let data = yield (0, main_1.getBoard)(req.body);
+    let data = yield (0, main_1.getBoard)();
     res.status(data.status).json(data.json);
 }));
 exports.default = router;
