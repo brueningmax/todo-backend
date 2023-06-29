@@ -54,6 +54,9 @@ router.get('/:id', async (req:Request, res:Response) => {
 // update todo
 router.patch('/:id', async (req:Request, res:Response) => {
     let data = await updateTodo(req.params.id, req.body)
+    if (data.status === 200) {
+        data = await getBoard()
+    }
     res.status(data.status).json(data.json)
 })
 

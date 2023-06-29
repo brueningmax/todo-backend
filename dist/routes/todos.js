@@ -57,6 +57,9 @@ router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 // update todo
 router.patch('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let data = yield (0, todos_1.updateTodo)(req.params.id, req.body);
+    if (data.status === 200) {
+        data = yield (0, main_1.getBoard)();
+    }
     res.status(data.status).json(data.json);
 }));
 // get all todo
