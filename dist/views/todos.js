@@ -148,6 +148,8 @@ exports.updateTodo = updateTodo;
 // complete Todo
 const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let previousTodo = null;
+        let nextTodo = null;
         const todo = yield _1.Todo.findByPk(parseInt(id));
         if (todo) {
             if (todo.nextTodo) {
@@ -160,21 +162,18 @@ const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
                 previousTodo.nextTodo = todo.nextTodo;
                 yield (previousTodo === null || previousTodo === void 0 ? void 0 : previousTodo.save());
             }
-            // const priority = ['salary', 'high', 'medium', 'low']
-            const priority = ['low', 'medium', 'high', 'salary'];
-            const indexOfPrio = priority.indexOf(todo.priority);
             const completedTodos = yield _1.Todo.findAll({
                 where: { user: 2 }
             });
-            let previousTodo = null;
-            let nextTodo = null;
             if (completedTodos.length > 0) {
-                const sortedTodos = (0, utils_1.sortTodos)(completedTodos).reverse();
+                const priority = ['salary', 'high', 'medium', 'low'];
+                const indexOfPrio = priority.indexOf(todo.priority);
+                const sortedTodos = (0, utils_1.sortTodos)(completedTodos);
                 const priorityEnds = [];
-                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'low'));
-                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'medium'));
-                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'high'));
-                priorityEnds.push(sortedTodos.find(todo => todo.priority = 'salary'));
+                priorityEnds.push(sortedTodos.findLast(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'salary'));
+                priorityEnds.push(sortedTodos.findLast(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'high'));
+                priorityEnds.push(sortedTodos.findLast(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'medium'));
+                priorityEnds.push(sortedTodos.findLast(todo => (todo === null || todo === void 0 ? void 0 : todo.priority) == 'low'));
                 if (priorityEnds[indexOfPrio]) {
                     previousTodo = priorityEnds[indexOfPrio].id;
                     nextTodo = priorityEnds[indexOfPrio].nextTodo;
@@ -184,9 +183,9 @@ const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
                     let foundPrevious = false;
                     for (let i = indexOfPrio; i >= 0; i--) {
                         if (priorityEnds[i]) {
-                            previousTodo = priorityEnds[indexOfPrio].id;
-                            nextTodo = priorityEnds[indexOfPrio].nextTodo;
-                            foundprevious = true;
+                            previousTodo = priorityEnds[i].id;
+                            nextTodo = priorityEnds[i].nextTodo;
+                            foundPrevious = true;
                             break;
                         }
                     }
@@ -197,27 +196,30 @@ const completeTodo = (id) => __awaiter(void 0, void 0, void 0, function* () {
                             nextTodo = null;
                         }
                         else {
-                            nextTodo = sortedTodos[utils_1.sortTodos.length - 1].id;
+                            console.log(sortedTodos[0]);
+                            nextTodo = sortedTodos[0].id;
                         }
                     }
                 }
                 if (previousTodo) {
                     const oldPrevious = yield _1.Todo.findByPk(previousTodo);
                     oldPrevious.nextTodo = todo.id;
-                    oldPrevious === null || oldPrevious === void 0 ? void 0 : oldPrevious.save();
+                    oldPrevious.save();
                 }
                 if (nextTodo) {
                     const oldNext = yield _1.Todo.findByPk(nextTodo);
                     oldNext.previousTodo = todo.id;
-                    oldNext === null || oldNext === void 0 ? void 0 : oldNext.save();
+                    oldNext.save();
                 }
             }
             todo.previousTodo = previousTodo;
             todo.nextTodo = nextTodo;
-            todo.status = 'completed';
             todo.user = 2;
-            yield todo.save();
+            todo.status = 'completed';
+            const save = yield todo.save();
         }
+        console.log('previousTodo: ', previousTodo);
+        console.log('nextTodo: ', nextTodo);
         return { status: 200, json: todo };
     }
     catch (error) {
@@ -249,7 +251,7 @@ const deleteCompletedTodos = () => __awaiter(void 0, void 0, void 0, function* (
     try {
         yield _1.Todo.destroy({
             where: {
-                user: 4,
+                user: 2,
                 status: 'completed'
             }
         });

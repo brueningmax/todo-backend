@@ -39,6 +39,9 @@ router.patch('/complete/:id', async (req:Request, res:Response) => {
 // delete completed todos
 router.delete('/deleteCompleted', jwtAuth, async (req:Request, res:Response) => {
     let data = await deleteCompletedTodos()
+    if (data.status === 204) {
+        data = await getBoard()
+    }
     res.status(data.status).json(data.json)
 })
 

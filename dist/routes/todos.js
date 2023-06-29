@@ -44,6 +44,9 @@ router.patch('/complete/:id', (req, res) => __awaiter(void 0, void 0, void 0, fu
 // delete completed todos
 router.delete('/deleteCompleted', JWTauth_1.jwtAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let data = yield (0, todos_1.deleteCompletedTodos)();
+    if (data.status === 204) {
+        data = yield (0, main_1.getBoard)();
+    }
     res.status(data.status).json(data.json);
 }));
 // get todo
